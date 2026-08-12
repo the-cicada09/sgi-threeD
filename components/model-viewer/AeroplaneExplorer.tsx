@@ -41,12 +41,20 @@ export function AeroplaneExplorer() {
             ))}
           </div>
         </div>
-        <Link
-          href="/charts"
-          className="rounded-lg border border-black/10 bg-white px-4 py-2 text-sm font-medium text-zinc-700 shadow-sm transition hover:bg-zinc-50 dark:border-white/10 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800"
-        >
-          View charts →
-        </Link>
+        <div className="flex shrink-0 gap-2">
+          <Link
+            href="/"
+            className="rounded-lg border border-black/10 bg-white px-4 py-2 text-sm font-medium text-zinc-700 shadow-sm transition hover:bg-zinc-50 dark:border-white/10 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800"
+          >
+            ← Home
+          </Link>
+          <Link
+            href="/charts"
+            className="rounded-lg border border-black/10 bg-white px-4 py-2 text-sm font-medium text-zinc-700 shadow-sm transition hover:bg-zinc-50 dark:border-white/10 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800"
+          >
+            View charts →
+          </Link>
+        </div>
       </div>
       <ModelViewer
         model={model}

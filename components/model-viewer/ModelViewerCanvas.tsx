@@ -20,8 +20,9 @@ import {
 } from "@react-three/drei";
 import * as THREE from "three";
 import Model from "./Model";
+import { PartInfoModal } from "./PartInfoModal";
 import { frame } from "./frame";
-import { MODELS, type Hotspot, type ModelName } from "./models";
+import { MODELS, type Hotspot, type ModelName, type PartInfo } from "./models";
 
 export type Lighting = "day" | "night";
 
@@ -87,6 +88,27 @@ export interface ModelViewerProps {
 
 const PADDING = { paddingLeft: 0.3, paddingRight: 0.3, paddingTop: 0.3, paddingBottom: 0.3 };
 
+/** True if `point` falls within a hotspot's [min, max] box. */
+function boxContainsPoint(box: Hotspot["box"], point: THREE.Vector3) {
+  const [min, max] = box;
+  return (
+    point.x >= min[0] &&
+    point.x <= max[0] &&
+    point.y >= min[1] &&
+    point.y <= max[1] &&
+    point.z >= min[2] &&
+    point.z <= max[2]
+  );
+}
+
+/** Identifies which named part (if any) a direct click on the model landed
+ *  on: the first hotspot whose box contains the point, or null if the click
+ *  landed elsewhere on the body (no info to show there). */
+function findClickedPart(model: ModelName, point: THREE.Vector3): PartInfo | null {
+  const hotspots = MODELS[model].hotspots ?? [];
+  return hotspots.find((hotspot) => boxContainsPoint(hotspot.box, point)) ?? null;
+}
+
 // Dev-only: click the model to log its local-space coordinates to the console,
 // so new hotspot `marker`/`box` values can be read off directly instead of guessed.
 // Always on in dev regardless of `enableHotspots` — it's how you'd discover the
@@ -136,6 +158,7 @@ function Scene({
   controlsRef,
   boundsRef,
   onPick,
+  onPartClick,
 }: {
   model: ModelName;
   autoRotate: boolean;
@@ -144,6 +167,7 @@ function Scene({
   controlsRef: RefObject<CameraControlsImpl | null>;
   boundsRef: RefObject<THREE.Box3 | null>;
   onPick: (hotspot: Hotspot) => void;
+  onPartClick: (part: PartInfo) => void;
 }) {
   const groupRef = useRef<THREE.Group>(null);
   const hotspots = enableHotspots ? (MODELS[model].hotspots ?? []) : [];
@@ -163,22 +187,31 @@ function Scene({
     }
   });
 
-  const handlePick = useCallback((event: ThreeEvent<MouseEvent>) => {
-    if (!groupRef.current) return;
-    event.stopPropagation();
-    // event.point is world space; hotspot marker/box values are local space
-    // (the group has no transform of its own, but converting stays correct
-    // even if that ever changes).
-    const local = groupRef.current.worldToLocal(event.point.clone());
-    const round = (n: number) => Math.round(n * 100) / 100;
-    setPickedPoint(local);
-    console.log(
-      `[hotspot-picker] [${round(local.x)}, ${round(local.y)}, ${round(local.z)}]`,
-    );
-  }, []);
+  const handleModelClick = useCallback(
+    (event: ThreeEvent<MouseEvent>) => {
+      if (!groupRef.current) return;
+      event.stopPropagation();
+      // event.point is world space; hotspot marker/box values are local space
+      // (the group has no transform of its own, but converting stays correct
+      // even if that ever changes).
+      const local = groupRef.current.worldToLocal(event.point.clone());
+
+      if (PICK_COORDINATES) {
+        const round = (n: number) => Math.round(n * 100) / 100;
+        setPickedPoint(local);
+        console.log(
+          `[hotspot-picker] [${round(local.x)}, ${round(local.y)}, ${round(local.z)}]`,
+        );
+      }
+
+      const part = findClickedPart(model, local);
+      if (part) onPartClick(part);
+    },
+    [model, onPartClick],
+  );
 
   return (
-    <group ref={groupRef} onClick={PICK_COORDINATES ? handlePick : undefined}>
+    <group ref={groupRef} onClick={handleModelClick}>
       <Model name={model} />
       {PICK_COORDINATES && pickedPoint && (
         <mesh position={pickedPoint}>
@@ -234,6 +267,7 @@ export default function ModelViewerCanvas({
   const controlsRef = externalControlsRef ?? internalControlsRef;
   const boundsRef = externalBoundsRef ?? internalBoundsRef;
   const [activeId, setActiveId] = useState<string | null>(null);
+  const [infoPart, setInfoPart] = useState<PartInfo | null>(null);
 
   const pickHotspot = useCallback((hotspot: Hotspot) => {
     if (!controlsRef.current) return;
@@ -243,6 +277,10 @@ export default function ModelViewerCanvas({
     );
     setActiveId(hotspot.id);
     controlsRef.current.fitToBox(box, true, PADDING);
+    // Hotspot pins sit right on top of the part they label, so they'd
+    // otherwise block a bare-mesh click from ever reaching that same part —
+    // show the info modal here too rather than requiring an off-pin click.
+    setInfoPart(hotspot);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -277,6 +315,7 @@ export default function ModelViewerCanvas({
               controlsRef={controlsRef}
               boundsRef={boundsRef}
               onPick={pickHotspot}
+              onPartClick={setInfoPart}
             />
             {environmentPreset && (
               <Environment
@@ -304,6 +343,7 @@ export default function ModelViewerCanvas({
           />
         </Canvas>
         <ProgressOverlay />
+        <PartInfoModal part={infoPart} onClose={() => setInfoPart(null)} />
         {activeId !== null && (
           <button
             type="button"

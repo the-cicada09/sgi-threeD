@@ -1,9 +1,16 @@
-export interface Hotspot {
-  id: string;
+/** Info shown in the click-to-inspect modal for a clicked part of the model. */
+export interface PartInfo {
   label: string;
+  description: string;
+}
+
+export interface Hotspot extends PartInfo {
+  id: string;
   /** Marker position, in the model's local space. */
   marker: readonly [number, number, number];
-  /** Region the camera fits to on click: [[minX, minY, minZ], [maxX, maxY, maxZ]]. */
+  /** Region the camera fits to on click, and also the hit-test box used to
+   *  identify this part when the model itself is clicked directly:
+   *  [[minX, minY, minZ], [maxX, maxY, maxZ]]. */
   box: readonly [
     readonly [number, number, number],
     readonly [number, number, number],
@@ -25,6 +32,8 @@ export const MODELS = {
       {
         id: "nose",
         label: "Nose",
+        description:
+          "Houses the weather radar dome and forward avionics bay. Its curved, tapered shape reduces aerodynamic drag and shields the radar antenna that scans the flight path ahead for storms and turbulence.",
         // Pushed slightly beyond the model's actual nose tip (~3.33) so the
         // marker floats in open air instead of sitting on the mesh surface —
         // right on the surface, `occlude` flickers the pin invisible because
@@ -38,6 +47,8 @@ export const MODELS = {
       {
         id: "cockpit",
         label: "Cockpit",
+        description:
+          "The flight deck, where the pilots sit. On the A380 it's fitted with a glass cockpit — large digital displays and side-stick controls replacing traditional analog dials and yokes.",
         marker: [0, 0.75, 3.2],
         box: [
           [-0.9, -0.4, 2.0],
@@ -47,6 +58,8 @@ export const MODELS = {
       {
         id: "tail",
         label: "Tail",
+        description:
+          "The empennage, made up of the vertical stabilizer and rudder for yaw control, plus the horizontal stabilizer for pitch trim. The auxiliary power unit that runs onboard systems on the ground also sits at its base.",
         marker: [0, 1.6, -2.6],
         box: [
           [-1.8, -0.4, -3.4],
@@ -56,6 +69,8 @@ export const MODELS = {
       {
         id: "wing-right",
         label: "Right wing",
+        description:
+          "Generates the lift that keeps the aircraft airborne and carries the engines and main fuel tanks. Flaps, slats, ailerons, and spoilers along its edges control lift and roll.",
         marker: [2.3, 0.0, 0.6],
         box: [
           [0.8, -0.4, -0.2],
@@ -65,6 +80,8 @@ export const MODELS = {
       {
         id: "wing-left",
         label: "Left wing",
+        description:
+          "Mirrors the right wing, generating lift and housing fuel and engines. Together the two wings span roughly 80 meters on the real A380-800.",
         marker: [-2.3, 0.0, 0.6],
         box: [
           [-3.7, -0.4, -0.2],

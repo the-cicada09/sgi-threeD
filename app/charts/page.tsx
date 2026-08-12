@@ -45,12 +45,20 @@ export default function ChartsPage() {
         <h1 className="text-lg font-semibold text-zinc-900 dark:text-zinc-50">
           Portfolio Financials
         </h1>
-        <Link
-          href="/aeroplane"
-          className="rounded-lg border border-black/10 bg-white px-4 py-2 text-sm font-medium text-zinc-700 shadow-sm transition hover:bg-zinc-50 dark:border-white/10 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800"
-        >
-          ← View 3D model
-        </Link>
+        <div className="flex shrink-0 gap-2">
+          <Link
+            href="/"
+            className="rounded-lg border border-black/10 bg-white px-4 py-2 text-sm font-medium text-zinc-700 shadow-sm transition hover:bg-zinc-50 dark:border-white/10 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800"
+          >
+            ← Home
+          </Link>
+          <Link
+            href="/aeroplane"
+            className="rounded-lg border border-black/10 bg-white px-4 py-2 text-sm font-medium text-zinc-700 shadow-sm transition hover:bg-zinc-50 dark:border-white/10 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800"
+          >
+            ← View 3D model
+          </Link>
+        </div>
       </div>
 
       <div className="mx-auto grid w-full max-w-6xl gap-6 md:grid-cols-2">
