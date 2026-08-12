@@ -1,0 +1,11 @@
+Model Information:
+* title:	Airbus ZeroE
+* source:	https://sketchfab.com/3d-models/airbus-zeroe-f49839a05d7a4cf591d8565e5e88c0dc
+* author:	dannzjs (https://sketchfab.com/dannzjs)
+
+Model License:
+* license type:	CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+* requirements:	Author must be credited. Commercial use is allowed.
+
+If you use this 3D model in your project be sure to copy paste this credit wherever you share it:
+This work is based on "Airbus ZeroE" (https://sketchfab.com/3d-models/airbus-zeroe-f49839a05d7a4cf591d8565e5e88c0dc) by dannzjs (https://sketchfab.com/dannzjs) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)

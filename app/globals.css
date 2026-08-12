@@ -1,5 +1,12 @@
 @import "tailwindcss";
 
+/* Dark mode is opt-in via a `.dark` ancestor class, which is never applied
+ * anywhere in the app. That keeps every `dark:` utility already in the
+ * components inert, so the app stays on a single white theme regardless of
+ * the visitor's OS/browser color scheme, instead of the default Tailwind
+ * behavior of switching automatically on `prefers-color-scheme: dark`. */
+@custom-variant dark (&:is(.dark *));
+
 :root {
   --background: #ffffff;
   --foreground: #171717;
@@ -8,19 +15,11 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --font-sans: var(--font-poppins);
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
 }
