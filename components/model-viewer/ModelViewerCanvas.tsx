@@ -20,7 +20,7 @@ import {
 } from "@react-three/drei";
 import * as THREE from "three";
 import Model from "./Model";
-import { PartInfoModal } from "./PartInfoModal";
+import { PartInfoModal, type SidebarVariant } from "./PartInfoModal";
 import { frame } from "./frame";
 import { MODELS, type Hotspot, type ModelName, type PartInfo } from "./models";
 
@@ -74,6 +74,10 @@ export interface ModelViewerProps {
   /** Renders the model registry's hotspot pins and click-to-zoom. Default
    *  true; only visible for models that actually define hotspots. */
   enableHotspots?: boolean;
+  /** Style of the part-info sidebar: "fixed" (default) pins it to the
+   *  viewport, full page height; "inline" makes it a flex sibling of the
+   *  canvas that only spans the canvas's height and pushes it over. */
+  sidebarVariant?: SidebarVariant;
   /** External camera-controls ref, so a caller can drive zoom/rotate/pan/reset
    *  imperatively (buttons, etc). A local ref is used if omitted. */
   controlsRef?: RefObject<CameraControlsImpl | null>;
@@ -257,6 +261,7 @@ export default function ModelViewerCanvas({
   environmentPreset,
   environmentBackground = false,
   enableHotspots = true,
+  sidebarVariant = "fixed",
   controlsRef: externalControlsRef,
   boundsRef: externalBoundsRef,
   background,
@@ -293,67 +298,80 @@ export default function ModelViewerCanvas({
 
   const rig = LIGHT_RIGS[lighting];
 
-  return (
-    <div className={`relative ${className ?? ""}`} style={background ? { backgroundColor: background } : undefined}>
-      <ModelErrorBoundary>
-        <Canvas
-          className="h-full w-full"
-          dpr={[1, 2]}
-          camera={{ fov: 45, near: 0.1, far: 1000, position: [4, 2, 6] }}
-          gl={{ antialias: true, powerPreference: "high-performance" }}
-        >
-          <ambientLight intensity={rig.ambient} />
-          <hemisphereLight intensity={rig.hemi} groundColor="#444444" />
-          <directionalLight position={[5, 8, 5]} intensity={rig.dir} />
+  // Shared between both sidebar variants — only the wrapper around it (and
+  // the sidebar itself) differ below.
+  const canvas = (
+    <ModelErrorBoundary>
+      <Canvas
+        className="h-full w-full"
+        dpr={[1, 2]}
+        camera={{ fov: 45, near: 0.1, far: 1000, position: [4, 2, 6] }}
+        gl={{ antialias: true, powerPreference: "high-performance" }}
+      >
+        <ambientLight intensity={rig.ambient} />
+        <hemisphereLight intensity={rig.hemi} groundColor="#444444" />
+        <directionalLight position={[5, 8, 5]} intensity={rig.dir} />
 
-          <Suspense fallback={null}>
-            <Scene
-              model={model}
-              autoRotate={autoRotate}
-              enableHotspots={enableHotspots}
-              activeId={activeId}
-              controlsRef={controlsRef}
-              boundsRef={boundsRef}
-              onPick={pickHotspot}
-              onPartClick={setInfoPart}
-            />
-            {environmentPreset && (
-              <Environment
-                preset={environmentPreset}
-                background={environmentBackground}
-                // Tilts the HDRI sphere (not just the camera) so the aircraft reads
-                // as airborne against open sky instead of parked at street level —
-                // the raw presets center their horizon on the default eye line.
-                backgroundRotation={[-0.5, 0, 0]}
-                environmentRotation={[-0.5, 0, 0]}
-              />
-            )}
-          </Suspense>
-
-          <CameraControls
-            ref={controlsRef}
-            makeDefault
-            smoothTime={0.4}
-            minDistance={minDistance}
-            maxDistance={maxDistance}
-            azimuthRotateSpeed={enableRotate ? 1 : 0}
-            polarRotateSpeed={enableRotate ? 1 : 0}
-            truckSpeed={enablePan ? 1 : 0}
-            dollySpeed={enableZoom ? 1 : 0}
+        <Suspense fallback={null}>
+          <Scene
+            model={model}
+            autoRotate={autoRotate}
+            enableHotspots={enableHotspots}
+            activeId={activeId}
+            controlsRef={controlsRef}
+            boundsRef={boundsRef}
+            onPick={pickHotspot}
+            onPartClick={setInfoPart}
           />
-        </Canvas>
-        <ProgressOverlay />
-        <PartInfoModal part={infoPart} onClose={() => setInfoPart(null)} />
-        {activeId !== null && (
-          <button
-            type="button"
-            onClick={resetView}
-            className="absolute bottom-3 right-3 cursor-pointer rounded-full border border-black/10 bg-white/90 px-3 py-1.5 text-xs font-medium text-zinc-700 shadow-sm backdrop-blur transition hover:bg-white dark:border-white/10 dark:bg-black/70 dark:text-zinc-200"
-          >
-            Reset view
-          </button>
-        )}
-      </ModelErrorBoundary>
+          {environmentPreset && (
+            <Environment
+              preset={environmentPreset}
+              background={environmentBackground}
+              // Tilts the HDRI sphere (not just the camera) so the aircraft reads
+              // as airborne against open sky instead of parked at street level —
+              // the raw presets center their horizon on the default eye line.
+              backgroundRotation={[-0.5, 0, 0]}
+              environmentRotation={[-0.5, 0, 0]}
+            />
+          )}
+        </Suspense>
+
+        <CameraControls
+          ref={controlsRef}
+          makeDefault
+          smoothTime={0.4}
+          minDistance={minDistance}
+          maxDistance={maxDistance}
+          azimuthRotateSpeed={enableRotate ? 1 : 0}
+          polarRotateSpeed={enableRotate ? 1 : 0}
+          truckSpeed={enablePan ? 1 : 0}
+          dollySpeed={enableZoom ? 1 : 0}
+        />
+      </Canvas>
+      <ProgressOverlay />
+      {activeId !== null && (
+        <button
+          type="button"
+          onClick={resetView}
+          className="absolute bottom-3 right-3 cursor-pointer rounded-full border border-black/10 bg-white/90 px-3 py-1.5 text-xs font-medium text-zinc-700 shadow-sm backdrop-blur transition hover:bg-white dark:border-white/10 dark:bg-black/70 dark:text-zinc-200"
+        >
+          Reset view
+        </button>
+      )}
+    </ModelErrorBoundary>
+  );
+
+  return (
+    <div
+      className={`${sidebarVariant === "inline" ? "flex" : "relative overflow-hidden"} ${className ?? ""}`}
+      style={background ? { backgroundColor: background } : undefined}
+    >
+      {sidebarVariant === "inline" ? (
+        <div className="relative h-full min-w-0 flex-1 overflow-hidden">{canvas}</div>
+      ) : (
+        canvas
+      )}
+      <PartInfoModal part={infoPart} onClose={() => setInfoPart(null)} variant={sidebarVariant} />
     </div>
   );
 }

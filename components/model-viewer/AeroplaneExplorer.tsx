@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { ModelViewer } from "./ModelViewer";
+import type { SidebarVariant } from "./PartInfoModal";
 import { MODELS, type ModelName } from "./models";
 
 const MODEL_ORDER = Object.keys(MODELS) as ModelName[];
@@ -13,11 +14,11 @@ const MODEL_ORDER = Object.keys(MODELS) as ModelName[];
  * instance (only its `model` prop changes — CameraControls/Canvas stay
  * mounted, only the GLTF underneath swaps and re-fits).
  */
-export function AeroplaneExplorer() {
+export function AeroplaneExplorer({ sidebarVariant }: { sidebarVariant?: SidebarVariant }) {
   const [model, setModel] = useState<ModelName>("airbus_a380_800");
 
   return (
-    <div className="flex flex-1 flex-col items-center justify-center gap-4 bg-zinc-50 p-8 dark:bg-zinc-950">
+    <div className="flex flex-1 flex-col items-center gap-4 bg-zinc-50 p-8 dark:bg-zinc-950">
       <div className="flex w-full max-w-6xl flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="text-lg font-semibold text-zinc-900 dark:text-zinc-50">
@@ -49,6 +50,12 @@ export function AeroplaneExplorer() {
             ← Home
           </Link>
           <Link
+            href={sidebarVariant === "inline" ? "/aeroplane" : "/aeroplane/inline-sidebar"}
+            className="rounded-lg border border-black/10 bg-white px-4 py-2 text-sm font-medium text-zinc-700 shadow-sm transition hover:bg-zinc-50 dark:border-white/10 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800"
+          >
+            {sidebarVariant === "inline" ? "Compare: fixed sidebar →" : "Compare: inline sidebar →"}
+          </Link>
+          <Link
             href="/charts"
             className="rounded-lg border border-black/10 bg-white px-4 py-2 text-sm font-medium text-zinc-700 shadow-sm transition hover:bg-zinc-50 dark:border-white/10 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800"
           >
@@ -58,7 +65,8 @@ export function AeroplaneExplorer() {
       </div>
       <ModelViewer
         model={model}
-        className="h-[85vh]! w-full max-w-6xl rounded-xl border border-black/8 dark:border-white/15"
+        sidebarVariant={sidebarVariant}
+        className="h-[60vh]! w-full max-w-6xl rounded-xl border border-black/8 dark:border-white/15"
       />
     </div>
   );
