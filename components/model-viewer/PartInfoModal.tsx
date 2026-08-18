@@ -14,6 +14,23 @@ const VARIANT_CLASSES: Record<SidebarVariant, string> = {
   inline: "h-full shrink-0",
 };
 
+/** Badge color per maintenance status. */
+const STATUS_CLASSES: Record<PartInfo["status"], string> = {
+  Operational: "bg-emerald-100 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-400",
+  "Scheduled Maintenance": "bg-amber-100 text-amber-700 dark:bg-amber-500/15 dark:text-amber-400",
+  "Under Inspection": "bg-sky-100 text-sky-700 dark:bg-sky-500/15 dark:text-sky-400",
+};
+
+/** One label/value row in the part-record table below the description. */
+function InfoRow({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="flex items-baseline justify-between gap-3 py-1.5">
+      <dt className="text-xs text-zinc-500 dark:text-zinc-400">{label}</dt>
+      <dd className="text-right text-xs font-medium text-zinc-800 dark:text-zinc-100">{value}</dd>
+    </div>
+  );
+}
+
 /**
  * Sidebar shown when the user clicks a part of the model (mesh or hotspot
  * pin — see `Scene`'s `handleModelClick`/`onPick` in ModelViewerCanvas.tsx).
@@ -44,7 +61,7 @@ export function PartInfoModal({
       }`}
     >
       {part && (
-        <div className="w-72 p-5">
+        <div className="w-72 overflow-y-auto p-5">
           <div className="flex items-start justify-between gap-4">
             <h2 id="part-info-title" className="text-base font-semibold text-zinc-900 dark:text-zinc-50">
               {part.label}
@@ -58,9 +75,25 @@ export function PartInfoModal({
               ✕
             </button>
           </div>
-          <p className="mt-2 text-sm leading-relaxed text-zinc-600 dark:text-zinc-300">
+
+          <span
+            className={`mt-2 inline-block rounded-full px-2 py-0.5 text-[11px] font-medium ${STATUS_CLASSES[part.status]}`}
+          >
+            {part.status}
+          </span>
+
+          <p className="mt-3 text-sm leading-relaxed text-zinc-600 dark:text-zinc-300">
             {part.description}
           </p>
+
+          <dl className="mt-4 divide-y divide-black/5 border-t border-b border-black/5 dark:divide-white/10 dark:border-white/10">
+            <InfoRow label="Manufacturer" value={part.manufacturer} />
+            <InfoRow label="Part number" value={part.partNumber} />
+            <InfoRow label="Unit cost" value={part.cost} />
+            <InfoRow label="Installed" value={part.installDate} />
+            <InfoRow label="Last maintenance" value={part.lastMaintenance} />
+            <InfoRow label="Next maintenance" value={part.nextMaintenance} />
+          </dl>
         </div>
       )}
     </aside>
