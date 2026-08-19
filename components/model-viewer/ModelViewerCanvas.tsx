@@ -225,7 +225,13 @@ function Scene({
       )}
       {activeId === null &&
         hotspots.map((hotspot) => (
-          <Html key={hotspot.id} position={hotspot.marker} center occlude distanceFactor={8}>
+          // No distanceFactor: the registry holds models at wildly different
+          // native scales (see frame.ts) — distanceFactor scales the label
+          // inversely with camera distance, which is tuned to *a* scale and
+          // renders unreadably tiny (or huge) on anything else. Omitting it
+          // keeps the pin a constant on-screen size regardless of the
+          // model's own units or how far the camera sits to frame it.
+          <Html key={hotspot.id} position={hotspot.marker} center occlude>
             <button
               type="button"
               onClick={(event) => {
