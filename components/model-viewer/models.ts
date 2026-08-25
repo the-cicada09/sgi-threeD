@@ -32,10 +32,36 @@ export interface Hotspot extends PartInfo {
   ];
 }
 
+/** Typical production-spec dimensions/performance for the aircraft *type* —
+ *  public reference figures (rounded), not measurements of this specific
+ *  glTF asset or a real tail number. Every field is optional so a model can
+ *  ship with a partial sheet; SpecificationGrid renders only what's present
+ *  and shows an empty state if none of it is. */
+export interface AircraftSpecs {
+  length?: string;
+  wingspan?: string;
+  height?: string;
+  passengers?: string;
+  cruiseSpeed?: string;
+  range?: string;
+  serviceCeiling?: string;
+  engine?: string;
+}
+
 export interface ModelConfig {
   /** Path to the .gltf/.glb file, relative to /public */
   path: string;
   label: string;
+  /** Manufacturer/family grouping (e.g. "Airbus", "Boeing") the model switcher
+   *  nests this entry under — see AeroplaneExplorer's FAMILIES grouping. */
+  family: string;
+  /** Short classification shown as a badge next to the model name, e.g.
+   *  "Wide-body Airliner", "Regional Turboprop", "General Aviation". */
+  category?: string;
+  /** Short blurb about the aircraft type, shown on the page when this model
+   *  is selected (not the per-part sidebar — see PartInfoModal for that). */
+  description?: string;
+  specs?: AircraftSpecs;
   hotspots?: readonly Hotspot[];
 }
 
@@ -43,6 +69,20 @@ export const MODELS = {
   airbus_a380_800: {
     path: "/airbus_a380_-_800/scene.gltf",
     label: "Airbus A380-800",
+    family: "Airbus",
+    category: "Wide-body Airliner",
+    description:
+      "Airbus's double-deck, four-engine wide-body — the largest passenger airliner ever built, with two full-length cabins seating 500+ passengers. Built for high-capacity trunk routes between major long-haul hubs.",
+    specs: {
+      length: "72.72 m",
+      wingspan: "79.75 m",
+      height: "24.09 m",
+      passengers: "525 (typical 3-class)",
+      cruiseSpeed: "903 km/h (Mach 0.85)",
+      range: "8,000 nmi (14,800 km)",
+      serviceCeiling: "13,100 m",
+      engine: "4× Rolls-Royce Trent 900 / Engine Alliance GP7200",
+    },
     hotspots: [
       {
         id: "nose",
@@ -192,6 +232,20 @@ export const MODELS = {
   vietnam_airlines_a321_200: {
     path: "https://res.cloudinary.com/vtulbqli/image/upload/v1786439617/vietnam_airlines_airbus_a321-200.glb",
     label: "Vietnam Airlines A321-200 (.glb)",
+    family: "Airbus",
+    category: "Narrow-body Airliner",
+    description:
+      "A single-aisle narrow-body from the Airbus A320 family, sized for short- to medium-haul routes. This livery reflects a Vietnam Airlines A321-200, one of the carrier's workhorse domestic and regional jets.",
+    specs: {
+      length: "44.51 m",
+      wingspan: "35.80 m",
+      height: "11.76 m",
+      passengers: "185–220",
+      cruiseSpeed: "830 km/h (Mach 0.78)",
+      range: "3,200 nmi (5,950 km)",
+      serviceCeiling: "12,000 m",
+      engine: "2× CFM56-5B / IAE V2500",
+    },
     hotspots: [
       {
         id: "nose",
@@ -278,6 +332,296 @@ export const MODELS = {
         ],
       },
     ],
+  },
+  // Uploaded models without per-part hotspot data. `hotspots` is optional on
+  // ModelConfig, but MODELS keeps `as const satisfies ...` (literal types,
+  // not widened) so every entry declares it explicitly as `[]` here —
+  // otherwise indexing MODELS[model].hotspots across the union of entry
+  // types would fail to typecheck for entries missing the property.
+  airbus_a320: {
+    path: "https://res.cloudinary.com/vtulbqli/image/upload/v1787654123/airbus_a320_1.glb",
+    label: "Airbus A320",
+    family: "Airbus",
+    category: "Narrow-body Airliner",
+    description:
+      "Airbus's original narrow-body twinjet, the aircraft that launched the A320 family in 1988 and brought fly-by-wire controls into mainstream commercial aviation. A short- to medium-haul single-aisle workhorse.",
+    specs: {
+      length: "37.57 m",
+      wingspan: "35.80 m",
+      height: "11.76 m",
+      passengers: "150–180",
+      cruiseSpeed: "828 km/h (Mach 0.78)",
+      range: "3,300 nmi (6,100 km)",
+      serviceCeiling: "12,000 m",
+      engine: "2× CFM56-5 / IAE V2500",
+    },
+    hotspots: [],
+  },
+  airbus_a320_200: {
+    path: "https://res.cloudinary.com/vtulbqli/image/upload/v1787654123/airbus_a320-200.glb",
+    label: "Airbus A320-200",
+    family: "Airbus",
+    category: "Narrow-body Airliner",
+    description:
+      "The definitive production version of the A320, in continuous service since the early 1990s and one of the most widely flown narrow-bodies in the world, competing directly with Boeing's 737 family.",
+    specs: {
+      length: "37.57 m",
+      wingspan: "35.80 m",
+      height: "11.76 m",
+      passengers: "150–180",
+      cruiseSpeed: "828 km/h (Mach 0.78)",
+      range: "3,300 nmi (6,100 km)",
+      serviceCeiling: "12,000 m",
+      engine: "2× CFM56-5B / IAE V2500",
+    },
+    hotspots: [],
+  },
+  airbus_a330: {
+    path: "https://res.cloudinary.com/vtulbqli/image/upload/v1787654124/airbus_a330_1.glb",
+    label: "Airbus A330",
+    family: "Airbus",
+    category: "Wide-body Airliner",
+    description:
+      "A wide-body twinjet from Airbus, used on medium- to long-haul routes as a lower-capacity, twin-engine complement to four-engine jets like the A340 and A380.",
+    specs: {
+      length: "63.69 m",
+      wingspan: "60.30 m",
+      height: "16.83 m",
+      passengers: "277–335",
+      cruiseSpeed: "871 km/h (Mach 0.82)",
+      range: "6,350 nmi (11,750 km)",
+      serviceCeiling: "12,500 m",
+      engine: "2× Rolls-Royce Trent 700 / GE CF6 / PW4000",
+    },
+    hotspots: [],
+  },
+  boeing_737: {
+    path: "https://res.cloudinary.com/vtulbqli/image/upload/v1787654123/boeing_737.glb",
+    label: "Boeing 737",
+    family: "Boeing",
+    category: "Narrow-body Airliner",
+    description:
+      "Boeing's best-selling narrow-body family, in continuous production since 1967 across multiple generations — from short regional hops to longer single-aisle routes on the newest MAX variants.",
+    specs: {
+      length: "39.5 m",
+      wingspan: "35.9 m (with winglets)",
+      height: "12.5 m",
+      passengers: "160–189",
+      cruiseSpeed: "842 km/h (Mach 0.79)",
+      range: "3,115 nmi (5,765 km)",
+      serviceCeiling: "12,500 m",
+      engine: "2× CFM56-7B",
+    },
+    hotspots: [],
+  },
+  boeing_777_300er: {
+    path: "https://res.cloudinary.com/vtulbqli/image/upload/v1787657297/boeing_777-300er_model-optimized.glb",
+    label: "Boeing 777-300ER",
+    family: "Boeing",
+    category: "Wide-body Airliner",
+    description:
+      "A long-range, high-capacity twinjet — one of the largest twin-engine wide-bodies in service, built for high-density international routes that would otherwise need a four-engine aircraft.",
+    specs: {
+      length: "73.9 m",
+      wingspan: "64.8 m",
+      height: "18.5 m",
+      passengers: "396 (3-class), up to 550",
+      cruiseSpeed: "892 km/h (Mach 0.84)",
+      range: "7,370 nmi (13,650 km)",
+      serviceCeiling: "13,100 m",
+      engine: "2× GE90-115B",
+    },
+    hotspots: [],
+  },
+  boeing_787_dreamliner: {
+    path: "https://res.cloudinary.com/vtulbqli/image/upload/v1787660665/boeing_787_dreamliner.glb",
+    label: "Boeing 787 Dreamliner",
+    family: "Boeing",
+    category: "Wide-body Airliner",
+    description:
+      "Boeing's composite-airframe long-haul twinjet, designed for high fuel efficiency on routes that don't need a wide-body quad-jet's capacity — opening up long, thin routes that weren't previously economical.",
+    specs: {
+      length: "62.8 m",
+      wingspan: "60.1 m",
+      height: "17.0 m",
+      passengers: "290–330",
+      cruiseSpeed: "903 km/h (Mach 0.85)",
+      range: "7,635 nmi (14,140 km)",
+      serviceCeiling: "13,100 m",
+      engine: "2× GEnx-1B / Rolls-Royce Trent 1000",
+    },
+    hotspots: [],
+  },
+  utair_boeing_767: {
+    path: "https://res.cloudinary.com/vtulbqli/image/upload/v1787657293/utair_boeing_767_1.glb",
+    label: "UTair Boeing 767",
+    family: "Boeing",
+    category: "Wide-body Airliner",
+    description:
+      "A wide-body twinjet from Boeing, originally developed for medium- to long-haul routes in the 1980s. This livery reflects Russian carrier UTair's fleet.",
+    specs: {
+      length: "54.9 m",
+      wingspan: "47.6 m",
+      height: "15.8 m",
+      passengers: "218–269",
+      cruiseSpeed: "851 km/h (Mach 0.80)",
+      range: "5,980 nmi (11,070 km)",
+      serviceCeiling: "13,100 m",
+      engine: "2× PW4000 / GE CF6 / RR RB211",
+    },
+    hotspots: [],
+  },
+  bombardier_crj_200: {
+    path: "https://res.cloudinary.com/vtulbqli/image/upload/v1787660666/bombardier_crj_200.glb",
+    label: "Bombardier CRJ 200",
+    family: "Bombardier",
+    category: "Regional Jet",
+    description:
+      "A 50-seat regional jet from Bombardier's Canadair Regional Jet family, built to feed passengers from smaller airports into larger hub networks.",
+    specs: {
+      length: "26.77 m",
+      wingspan: "21.21 m",
+      height: "6.22 m",
+      passengers: "50",
+      cruiseSpeed: "830 km/h (Mach 0.74)",
+      range: "1,700 nmi (3,150 km)",
+      serviceCeiling: "12,500 m",
+      engine: "2× GE CF34-3B1",
+    },
+    hotspots: [],
+  },
+  bombardier_dash_q400_qantaslink: {
+    path: "https://res.cloudinary.com/vtulbqli/image/upload/v1787660665/bombardier_dash_q400_-_qantas_link.glb",
+    label: "Bombardier Dash 8 Q400 (QantasLink)",
+    family: "Bombardier",
+    category: "Regional Turboprop",
+    description:
+      "A twin-turboprop regional airliner from Bombardier's Dash 8 family, seating around 74-78 passengers. This livery reflects QantasLink, Qantas's regional subsidiary.",
+    specs: {
+      length: "32.83 m",
+      wingspan: "28.42 m",
+      height: "8.34 m",
+      passengers: "74–78",
+      cruiseSpeed: "667 km/h",
+      range: "1,362 nmi (2,522 km)",
+      serviceCeiling: "7,620 m",
+      engine: "2× Pratt & Whitney Canada PW150A turboprops",
+    },
+    hotspots: [],
+  },
+  atr_42_600: {
+    path: "https://res.cloudinary.com/vtulbqli/image/upload/v1787660666/atr_42-600.glb",
+    label: "ATR 42-600",
+    family: "ATR",
+    category: "Regional Turboprop",
+    description:
+      "A twin-turboprop regional airliner from the Franco-Italian ATR partnership, seating around 48 passengers on short regional hops where jets aren't economical.",
+    specs: {
+      length: "22.67 m",
+      wingspan: "24.57 m",
+      height: "7.59 m",
+      passengers: "48",
+      cruiseSpeed: "556 km/h",
+      range: "716 nmi (1,326 km)",
+      serviceCeiling: "7,620 m",
+      engine: "2× Pratt & Whitney Canada PW127M turboprops",
+    },
+    hotspots: [],
+  },
+  atr_72_600: {
+    path: "https://res.cloudinary.com/vtulbqli/image/upload/v1787660665/atr_72-600.glb",
+    label: "ATR 72-600",
+    family: "ATR",
+    category: "Regional Turboprop",
+    description:
+      "The larger stablemate of the ATR 42 — a twin-turboprop regional airliner seating around 70-78 passengers on short regional routes.",
+    specs: {
+      length: "27.17 m",
+      wingspan: "27.05 m",
+      height: "7.65 m",
+      passengers: "70–78",
+      cruiseSpeed: "510 km/h",
+      range: "825 nmi (1,528 km)",
+      serviceCeiling: "7,620 m",
+      engine: "2× Pratt & Whitney Canada PW127M turboprops",
+    },
+    hotspots: [],
+  },
+  embraer_erj_135: {
+    path: "https://res.cloudinary.com/vtulbqli/image/upload/v1787660668/embraer_erj-135.glb",
+    label: "Embraer ERJ-135",
+    family: "Embraer",
+    category: "Regional Jet",
+    description:
+      "A regional jet from Brazilian manufacturer Embraer, seating around 37 passengers on thinner regional routes too small for a mainline narrow-body.",
+    specs: {
+      length: "26.33 m",
+      wingspan: "20.04 m",
+      height: "6.76 m",
+      passengers: "37",
+      cruiseSpeed: "829 km/h (Mach 0.78)",
+      range: "1,631 nmi (3,020 km)",
+      serviceCeiling: "11,280 m",
+      engine: "2× Rolls-Royce AE 3007A1",
+    },
+    hotspots: [],
+  },
+  saab_340: {
+    path: "https://res.cloudinary.com/vtulbqli/image/upload/v1787661577/saab_340-optimized.glb",
+    label: "Saab 340",
+    family: "Saab",
+    category: "Regional Turboprop",
+    description:
+      "A twin-turboprop regional airliner from Swedish manufacturer Saab, seating around 33-37 passengers — one of the most widely used aircraft in its size class since the 1980s.",
+    specs: {
+      length: "19.73 m",
+      wingspan: "21.44 m",
+      height: "6.97 m",
+      passengers: "33–37",
+      cruiseSpeed: "467 km/h",
+      range: "1,090 nmi (2,020 km)",
+      serviceCeiling: "7,620 m",
+      engine: "2× General Electric CT7-9B turboprops",
+    },
+    hotspots: [],
+  },
+  cessna_210a_centurion: {
+    path: "https://res.cloudinary.com/vtulbqli/image/upload/v1787660668/cessna_210a_centurion.glb",
+    label: "Cessna 210A Centurion",
+    family: "Cessna",
+    category: "General Aviation",
+    description:
+      "A single-engine, retractable-gear piston aircraft from Cessna's high-performance line — a fast, long-range general-aviation cruiser rather than an airliner.",
+    specs: {
+      length: "8.66 m",
+      wingspan: "11.25 m",
+      height: "2.84 m",
+      passengers: "5 (1 pilot + 4)",
+      cruiseSpeed: "324 km/h",
+      range: "1,150 nmi (2,130 km)",
+      serviceCeiling: "5,500 m",
+      engine: "1× Continental IO-520 piston",
+    },
+    hotspots: [],
+  },
+  cessna_182_skylane: {
+    path: "https://res.cloudinary.com/vtulbqli/image/upload/v1787660875/cessna_182_skylane-optimized.glb",
+    label: "Cessna 182 Skylane",
+    family: "Cessna",
+    category: "General Aviation",
+    description:
+      "A single-engine, fixed-gear piston aircraft from Cessna — one of the most widely flown general-aviation aircraft in the world, used for training and personal flying rather than airline service.",
+    specs: {
+      length: "8.84 m",
+      wingspan: "11.0 m",
+      height: "2.84 m",
+      passengers: "4 (1 pilot + 3)",
+      cruiseSpeed: "269 km/h",
+      range: "915 nmi (1,695 km)",
+      serviceCeiling: "5,490 m",
+      engine: "1× Lycoming IO-540 piston",
+    },
+    hotspots: [],
   },
 } as const satisfies Record<string, ModelConfig>;
 

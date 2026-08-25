@@ -9,7 +9,10 @@ import type { CameraControlsImpl } from "@react-three/drei";
  */
 export function frame(controls: CameraControlsImpl, box: THREE.Box3, animate: boolean) {
   const sphere = box.getBoundingSphere(new THREE.Sphere());
-  sphere.radius *= 1.35;
+  // Tight enough that the aircraft reads as the hero of the viewer (fills
+  // most of the frame) while still leaving room for hotspot pins and the
+  // toolbar overlay to sit clear of the fuselage.
+  sphere.radius *= 1.08;
 
   // The registry holds models at wildly different native scales (the A380 is a
   // handful of units across; some Sketchfab exports run to hundreds). Canvas's

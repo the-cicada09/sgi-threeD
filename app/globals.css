@@ -10,6 +10,18 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+  /* Backdrop the 3D viewer sits on (see AeroplaneExplorer's ModelViewer
+   * `background` prop) — kept as tokens rather than inline hex so it
+   * follows the .dark toggle below instead of staying light-only. */
+  --viewer-bg-start: #fafafa;
+  --viewer-bg-end: #f0f1f3;
+}
+
+.dark {
+  --background: #09090b;
+  --foreground: #ededed;
+  --viewer-bg-start: #18181b;
+  --viewer-bg-end: #09090b;
 }
 
 @theme inline {
@@ -22,4 +34,31 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
+}
+
+/* Hides the scrollbar on horizontally-scrolling nav rows (manufacturer/model
+ * pills on narrow viewports) without removing scroll functionality. */
+.no-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* Restrained entrance for content that swaps in on navigation (spec grid,
+ * related-aircraft cards, the expanded model sub-nav) — a fade + tiny rise,
+ * not a slide-in, per the "subtle animations only" rule. */
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(2px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.animate-fade-in {
+  animation: fade-in 200ms ease-out;
 }

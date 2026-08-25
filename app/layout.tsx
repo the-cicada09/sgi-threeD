@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Poppins } from "next/font/google";
+import Script from "next/script";
 import "./globals.css";
 
 const poppins = Poppins({
@@ -19,8 +20,27 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${poppins.variable} h-full antialiased`}>
-      <body className="min-h-full flex flex-col bg-red-600">{children}</body>
+    // suppressHydrationWarning on the one element the theme-init script
+    // below is allowed to touch — the server has no way to know a visitor's
+    // saved/OS theme, so its className legitimately differs from the
+    // client's first paint by exactly the "dark" class. Without this, React
+    // logs a hydration-mismatch warning for a difference that's expected
+    // and already handled (the script runs before hydration, so the
+    // browser never actually paints the "wrong" version). Scoped to <html>
+    // only — every other element still gets normal mismatch checking.
+    <html lang="en" className={`${poppins.variable} h-full antialiased`} suppressHydrationWarning>
+      <body className="min-h-full flex flex-col bg-red-600">
+        {children}
+        {/* Sets the .dark class (see globals.css) before hydration, from a
+         * saved choice or the visitor's OS preference — so ThemeToggle's
+         * first paint is already correct instead of flashing light then
+         * switching. beforeInteractive is required for that: Next.js
+         * injects it into the server HTML and runs it ahead of any
+         * first-party code, not just ahead of this component's effects. */}
+        <Script id="theme-init" strategy="beforeInteractive">
+          {`(function(){try{var t=localStorage.getItem('theme');var d=t?t==='dark':window.matchMedia('(prefers-color-scheme: dark)').matches;if(d)document.documentElement.classList.add('dark');}catch(e){}})();`}
+        </Script>
+      </body>
     </html>
   );
 }

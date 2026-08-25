@@ -13,6 +13,7 @@ import {
 import { Canvas, useFrame, type ThreeEvent } from "@react-three/fiber";
 import {
   CameraControls,
+  ContactShadows,
   Environment,
   Html,
   useProgress,
@@ -83,10 +84,17 @@ export interface ModelViewerProps {
   controlsRef?: RefObject<CameraControlsImpl | null>;
   /** External bounding-box ref, populated once the model is framed. */
   boundsRef?: RefObject<THREE.Box3 | null>;
-  /** Canvas backdrop color. Omitted by default (transparent — the parent
-   *  page's own background shows through, as every production page expects);
-   *  set explicitly where a demo wants a visibly distinct backdrop. */
+  /** Canvas backdrop — any valid CSS `background` value (solid color or
+   *  gradient). Omitted by default (transparent — the parent page's own
+   *  background shows through, as every production page expects); set
+   *  explicitly where a demo wants a visibly distinct backdrop. */
   background?: string;
+  /** Adds the on-canvas inspection chrome: a "3D VIEW" label, zoom/reset/
+   *  auto-rotate controls, a rotate/zoom hint, and a soft contact shadow
+   *  under the model. Off by default so every existing bare `<ModelViewer>`
+   *  (the /poc capability demos) keeps its original minimal look — the
+   *  production aeroplane page opts in explicitly. */
+  showToolbar?: boolean;
   className?: string;
 }
 
@@ -142,6 +150,51 @@ class ModelErrorBoundary extends Component<
   }
 }
 
+/** One button in the toolbar overlay (zoom/reset/auto-rotate) — see the
+ *  `showToolbar` block in ModelViewerCanvas below. */
+function ViewerButton({
+  onClick,
+  label,
+  active = false,
+  children,
+}: {
+  onClick: () => void;
+  label: string;
+  active?: boolean;
+  children: ReactNode;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-label={label}
+      aria-pressed={active}
+      title={label}
+      className={`flex h-7 w-7 cursor-pointer items-center justify-center rounded text-sm leading-none transition ${
+        active
+          ? "bg-zinc-900 text-white dark:bg-white dark:text-zinc-900"
+          : "text-zinc-600 hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-zinc-800"
+      }`}
+    >
+      {children}
+    </button>
+  );
+}
+
+function ResetIcon() {
+  return (
+    <svg viewBox="0 0 16 16" width="13" height="13" fill="none" aria-hidden>
+      <path
+        d="M13.5 8A5.5 5.5 0 1 1 11.6 3.9M13.5 2v3.5H10"
+        stroke="currentColor"
+        strokeWidth="1.4"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
 function ProgressOverlay() {
   const { active, progress } = useProgress();
   if (!active) return null;
@@ -154,36 +207,117 @@ function ProgressOverlay() {
 
 /** Loads the model, frames the camera to it, and renders its hotspot pins
  *  (hidden while one is already active, so a zoomed-in pin can't cover the others). */
+/** Where to sit a ContactShadows plane for a given model's bounding box:
+ *  centered under it in X/Z, resting on its lowest point in Y, sized to its
+ *  largest footprint dimension so the shadow reads as "under the aircraft"
+ *  regardless of the model's own scale (the registry spans ~1 unit to
+ *  ~hundreds of units across different Sketchfab exports — see models.ts). */
+function groundFor(box: THREE.Box3) {
+  const size = box.getSize(new THREE.Vector3());
+  const center = box.getCenter(new THREE.Vector3());
+  return { x: center.x, y: box.min.y, z: center.z, radius: Math.max(size.x, size.z) };
+}
+
+/**
+ * Bounding box used to frame the camera (and ground the contact shadow) —
+ * built from every mesh's own box, except flat, oversized outliers.
+ *
+ * Some Sketchfab "optimized" downloads bundle an essentially-invisible
+ * ground/AR-reference quad alongside the aircraft (confirmed by walking one
+ * such file's decoded meshes directly: a nameless, zero-height ~22-unit
+ * quad next to an otherwise ~9-unit aircraft). A naive
+ * `Box3().setFromObject(root)` unions that quad right in with the airframe,
+ * so the camera backs up to fit mostly empty space around a speck-sized
+ * aircraft — exactly the "very far away" framing this fixes.
+ *
+ * A real airframe part can legitimately be large (a full wing) or
+ * legitimately thin (an antenna), but rarely both at once — so a mesh is
+ * treated as a stray backdrop only when it's *both*: nearly flat (its
+ * smallest dimension is under 2% of its largest — anything with genuine
+ * depth, like a wing or fuselage section, clears this easily) *and* wildly
+ * larger than a typical part of this same model (over 6x the median mesh
+ * diagonal — so a thin-but-normal-sized antenna or panel is never caught,
+ * only something disproportionate). The quad still renders — this only
+ * keeps it out of the framing math.
+ */
+function framingBoxFor(root: THREE.Object3D): THREE.Box3 {
+  const meshes: { box: THREE.Box3; diag: number; flat: boolean }[] = [];
+  root.traverse((obj) => {
+    const mesh = obj as THREE.Mesh;
+    if (!mesh.isMesh) return;
+    const box = new THREE.Box3().setFromObject(mesh);
+    const size = box.getSize(new THREE.Vector3());
+    const diag = size.length();
+    if (diag === 0) return;
+    const flat = Math.min(size.x, size.y, size.z) / Math.max(size.x, size.y, size.z) < 0.02;
+    meshes.push({ box, diag, flat });
+  });
+  if (meshes.length === 0) return new THREE.Box3().setFromObject(root);
+
+  const median = [...meshes].sort((a, b) => a.diag - b.diag)[Math.floor(meshes.length / 2)].diag;
+
+  const core = new THREE.Box3();
+  let included = 0;
+  for (const m of meshes) {
+    if (m.flat && median > 0 && m.diag > median * 6) continue;
+    core.union(m.box);
+    included++;
+  }
+  // Shouldn't happen given the heuristic above, but never return an empty
+  // box — fall back to the naive union rather than framing nothing at all.
+  return included > 0 ? core : new THREE.Box3().setFromObject(root);
+}
+
 function Scene({
   model,
   autoRotate,
   enableHotspots,
+  showToolbar,
   activeId,
   controlsRef,
   boundsRef,
+  homeAnglesRef,
   onPick,
   onPartClick,
 }: {
   model: ModelName;
   autoRotate: boolean;
   enableHotspots: boolean;
+  showToolbar: boolean;
   activeId: string | null;
   controlsRef: RefObject<CameraControlsImpl | null>;
   boundsRef: RefObject<THREE.Box3 | null>;
+  homeAnglesRef: RefObject<{ azimuth: number; polar: number } | null>;
   onPick: (hotspot: Hotspot) => void;
   onPartClick: (part: PartInfo) => void;
 }) {
   const groupRef = useRef<THREE.Group>(null);
   const hotspots = enableHotspots ? (MODELS[model].hotspots ?? []) : [];
   const [pickedPoint, setPickedPoint] = useState<THREE.Vector3 | null>(null);
+  const [ground, setGround] = useState<ReturnType<typeof groundFor> | null>(null);
 
   useEffect(() => {
     if (!groupRef.current || !controlsRef.current) return;
-    const box = new THREE.Box3().setFromObject(groupRef.current);
+    const box = framingBoxFor(groupRef.current);
     boundsRef.current = box;
-    frame(controlsRef.current, box, false);
+    if (showToolbar) setGround(groundFor(box));
+    const controls = controlsRef.current;
+    // Switching models only re-fits distance (frame() below) — it doesn't
+    // touch orbit angle, so without this a model loads from whatever angle
+    // the user last dragged the *previous* model to, which on a differently
+    // proportioned aircraft can land looking nose-on or upside-down. Capture
+    // the very first (untouched, mount-time) angle once as "home", then pin
+    // every later switch back to it so each model always opens from the same
+    // canonical angle regardless of how the last one was left.
+    if (homeAnglesRef.current === null) {
+      homeAnglesRef.current = { azimuth: controls.azimuthAngle, polar: controls.polarAngle };
+    } else {
+      controls.azimuthAngle = homeAnglesRef.current.azimuth;
+      controls.polarAngle = homeAnglesRef.current.polar;
+    }
+    frame(controls, box, false);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [model]);
+  }, [model, showToolbar]);
 
   useFrame((_, delta) => {
     if (autoRotate && controlsRef.current) {
@@ -217,6 +351,17 @@ function Scene({
   return (
     <group ref={groupRef} onClick={handleModelClick}>
       <Model name={model} />
+      {ground && (
+        <ContactShadows
+          position={[ground.x, ground.y, ground.z]}
+          scale={ground.radius * 3}
+          far={ground.radius}
+          blur={2.5}
+          opacity={0.35}
+          resolution={512}
+          frames={1}
+        />
+      )}
       {PICK_COORDINATES && pickedPoint && (
         <mesh position={pickedPoint}>
           <sphereGeometry args={[0.05, 16, 16]} />
@@ -271,14 +416,24 @@ export default function ModelViewerCanvas({
   controlsRef: externalControlsRef,
   boundsRef: externalBoundsRef,
   background,
+  showToolbar = false,
   className,
 }: ModelViewerProps) {
   const internalControlsRef = useRef<CameraControlsImpl | null>(null);
   const internalBoundsRef = useRef<THREE.Box3 | null>(null);
   const controlsRef = externalControlsRef ?? internalControlsRef;
   const boundsRef = externalBoundsRef ?? internalBoundsRef;
+  // Captured once (see Scene's effect) and reused so every model switch and
+  // every "Reset view" click returns to the same canonical camera angle.
+  const homeAnglesRef = useRef<{ azimuth: number; polar: number } | null>(null);
   const [activeId, setActiveId] = useState<string | null>(null);
   const [infoPart, setInfoPart] = useState<PartInfo | null>(null);
+  // The toolbar's own auto-rotate toggle — separate from the `autoRotate`
+  // prop (which the /poc demos drive externally) so opting into the toolbar
+  // never changes behavior for a caller that didn't ask for it.
+  const [spinning, setSpinning] = useState(autoRotate);
+
+  const hasHotspots = (MODELS[model].hotspots ?? []).length > 0;
 
   const pickHotspot = useCallback((hotspot: Hotspot) => {
     if (!controlsRef.current) return;
@@ -298,7 +453,24 @@ export default function ModelViewerCanvas({
   const resetView = useCallback(() => {
     if (!controlsRef.current || !boundsRef.current) return;
     setActiveId(null);
-    frame(controlsRef.current, boundsRef.current, true);
+    const controls = controlsRef.current;
+    if (homeAnglesRef.current) {
+      controls.azimuthAngle = homeAnglesRef.current.azimuth;
+      controls.polarAngle = homeAnglesRef.current.polar;
+    }
+    frame(controls, boundsRef.current, true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // dollyTo takes an absolute distance, so a fixed ±20% step zooms
+  // consistently regardless of a model's native scale (the registry spans
+  // ~1 unit to ~hundreds of units across different Sketchfab exports).
+  const zoomIn = useCallback(() => {
+    controlsRef.current?.dollyTo(controlsRef.current.distance * 0.8, true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+  const zoomOut = useCallback(() => {
+    controlsRef.current?.dollyTo(controlsRef.current.distance * 1.25, true);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -321,11 +493,13 @@ export default function ModelViewerCanvas({
         <Suspense fallback={null}>
           <Scene
             model={model}
-            autoRotate={autoRotate}
+            autoRotate={showToolbar ? spinning : autoRotate}
             enableHotspots={enableHotspots}
+            showToolbar={showToolbar}
             activeId={activeId}
             controlsRef={controlsRef}
             boundsRef={boundsRef}
+            homeAnglesRef={homeAnglesRef}
             onPick={pickHotspot}
             onPartClick={setInfoPart}
           />
@@ -355,14 +529,45 @@ export default function ModelViewerCanvas({
         />
       </Canvas>
       <ProgressOverlay />
-      {activeId !== null && (
-        <button
-          type="button"
-          onClick={resetView}
-          className="absolute bottom-3 right-3 cursor-pointer rounded-full border border-black/10 bg-white/90 px-3 py-1.5 text-xs font-medium text-zinc-700 shadow-sm backdrop-blur transition hover:bg-white dark:border-white/10 dark:bg-black/70 dark:text-zinc-200"
-        >
-          Reset view
-        </button>
+      {showToolbar ? (
+        <>
+          <span className="pointer-events-none absolute top-3 left-3 text-[10px] font-semibold tracking-widest text-zinc-400 uppercase dark:text-zinc-500">
+            3D View
+          </span>
+          <p className="pointer-events-none absolute bottom-3 left-3 text-[11px] text-zinc-400 dark:text-zinc-500">
+            Rotate to inspect · Scroll to zoom
+            {hasHotspots ? " · Click a pin for details" : ""}
+          </p>
+          <div className="absolute right-3 bottom-3 flex flex-col gap-1 rounded-lg border border-black/10 bg-white/90 p-1 shadow-sm backdrop-blur dark:border-white/10 dark:bg-zinc-900/90">
+            <ViewerButton onClick={zoomIn} label="Zoom in">
+              +
+            </ViewerButton>
+            <ViewerButton onClick={zoomOut} label="Zoom out">
+              −
+            </ViewerButton>
+            <div className="h-px bg-black/10 dark:bg-white/10" />
+            <ViewerButton onClick={resetView} label="Reset view">
+              <ResetIcon />
+            </ViewerButton>
+            <ViewerButton
+              onClick={() => setSpinning((v) => !v)}
+              label={spinning ? "Pause auto-rotate" : "Auto-rotate"}
+              active={spinning}
+            >
+              {spinning ? "⏸" : "⟳"}
+            </ViewerButton>
+          </div>
+        </>
+      ) : (
+        activeId !== null && (
+          <button
+            type="button"
+            onClick={resetView}
+            className="absolute bottom-3 right-3 cursor-pointer rounded-full border border-black/10 bg-white/90 px-3 py-1.5 text-xs font-medium text-zinc-700 shadow-sm backdrop-blur transition hover:bg-white dark:border-white/10 dark:bg-black/70 dark:text-zinc-200"
+          >
+            Reset view
+          </button>
+        )
       )}
     </ModelErrorBoundary>
   );
@@ -370,7 +575,7 @@ export default function ModelViewerCanvas({
   return (
     <div
       className={`${sidebarVariant === "inline" ? "flex" : "relative overflow-hidden"} ${className ?? ""}`}
-      style={background ? { backgroundColor: background } : undefined}
+      style={background ? { background } : undefined}
     >
       {sidebarVariant === "inline" ? (
         <div className="relative h-full min-w-0 flex-1 overflow-hidden">{canvas}</div>
