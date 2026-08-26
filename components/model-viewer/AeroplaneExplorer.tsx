@@ -195,6 +195,24 @@ export function AeroplaneExplorer({ sidebarVariant }: { sidebarVariant?: Sidebar
                   </dd>
                 </div>
               )}
+              <div className="min-w-0">
+                <dt className="text-xs text-zinc-500 dark:text-zinc-400">Source asset</dt>
+                <dd className="mt-0.5 max-w-[280px] truncate text-sm font-mono text-zinc-500 dark:text-zinc-400">
+                  {config.path.startsWith("http") ? (
+                    <a
+                      href={config.path}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      title={config.path}
+                      className="hover:text-zinc-900 hover:underline dark:hover:text-zinc-100"
+                    >
+                      {config.path}
+                    </a>
+                  ) : (
+                    <span title={config.path}>{config.path}</span>
+                  )}
+                </dd>
+              </div>
             </dl>
           </div>
 
