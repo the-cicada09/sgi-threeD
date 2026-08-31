@@ -3,11 +3,14 @@
 import { useRef, useState, type ReactNode } from "react";
 import type { CameraControlsImpl } from "@react-three/drei";
 import * as THREE from "three";
-import { ModelViewer, type EnvironmentPreset } from "@/components/model-viewer/ModelViewer";
+import {
+  ModelViewer,
+  type EnvironmentPreset,
+} from "@/components/model-viewer/ModelViewer";
 import { frame } from "@/components/model-viewer/frame";
 import { LoadPerformanceCard } from "./LoadPerformanceCard";
 
-const MODEL = "airbus_a380_800" as const;
+const MODEL = "vietnam_airlines_a321_200" as const;
 const GLB_MODEL = "vietnam_airlines_a321_200" as const;
 
 // Every demo below renders the same production <ModelViewer> the aeroplane
@@ -17,7 +20,13 @@ const GLB_MODEL = "vietnam_airlines_a321_200" as const;
 const DAY_BACKDROP = "#dbe6f1";
 const NIGHT_BACKDROP = "#050810";
 
-function DemoButton({ onClick, children }: { onClick: () => void; children: ReactNode }) {
+function DemoButton({
+  onClick,
+  children,
+}: {
+  onClick: () => void;
+  children: ReactNode;
+}) {
   return (
     <button
       type="button"
@@ -50,8 +59,12 @@ function ZoomDemo() {
         className="h-72 w-full overflow-hidden rounded-xl"
       />
       <ControlsRow>
-        <DemoButton onClick={() => controlsRef.current?.dolly(1.5, true)}>Zoom in</DemoButton>
-        <DemoButton onClick={() => controlsRef.current?.dolly(-1.5, true)}>Zoom out</DemoButton>
+        <DemoButton onClick={() => controlsRef.current?.dolly(1.5, true)}>
+          Zoom in
+        </DemoButton>
+        <DemoButton onClick={() => controlsRef.current?.dolly(-1.5, true)}>
+          Zoom out
+        </DemoButton>
       </ControlsRow>
     </>
   );
@@ -72,16 +85,24 @@ function OrbitDemo() {
         className="h-72 w-full overflow-hidden rounded-xl"
       />
       <ControlsRow>
-        <DemoButton onClick={() => controlsRef.current?.rotate(-Math.PI / 4, 0, true)}>
+        <DemoButton
+          onClick={() => controlsRef.current?.rotate(-Math.PI / 4, 0, true)}
+        >
           Rotate left
         </DemoButton>
-        <DemoButton onClick={() => controlsRef.current?.rotate(Math.PI / 4, 0, true)}>
+        <DemoButton
+          onClick={() => controlsRef.current?.rotate(Math.PI / 4, 0, true)}
+        >
           Rotate right
         </DemoButton>
-        <DemoButton onClick={() => controlsRef.current?.rotate(0, -Math.PI / 6, true)}>
+        <DemoButton
+          onClick={() => controlsRef.current?.rotate(0, -Math.PI / 6, true)}
+        >
           Tilt up
         </DemoButton>
-        <DemoButton onClick={() => controlsRef.current?.rotate(0, Math.PI / 6, true)}>
+        <DemoButton
+          onClick={() => controlsRef.current?.rotate(0, Math.PI / 6, true)}
+        >
           Tilt down
         </DemoButton>
       </ControlsRow>
@@ -104,10 +125,18 @@ function PanDemo() {
         className="h-72 w-full overflow-hidden rounded-xl"
       />
       <ControlsRow>
-        <DemoButton onClick={() => controlsRef.current?.truck(-0.6, 0, true)}>Pan left</DemoButton>
-        <DemoButton onClick={() => controlsRef.current?.truck(0.6, 0, true)}>Pan right</DemoButton>
-        <DemoButton onClick={() => controlsRef.current?.truck(0, 0.6, true)}>Pan up</DemoButton>
-        <DemoButton onClick={() => controlsRef.current?.truck(0, -0.6, true)}>Pan down</DemoButton>
+        <DemoButton onClick={() => controlsRef.current?.truck(-0.6, 0, true)}>
+          Pan left
+        </DemoButton>
+        <DemoButton onClick={() => controlsRef.current?.truck(0.6, 0, true)}>
+          Pan right
+        </DemoButton>
+        <DemoButton onClick={() => controlsRef.current?.truck(0, 0.6, true)}>
+          Pan up
+        </DemoButton>
+        <DemoButton onClick={() => controlsRef.current?.truck(0, -0.6, true)}>
+          Pan down
+        </DemoButton>
       </ControlsRow>
     </>
   );
@@ -126,7 +155,9 @@ function AutoRotateDemo() {
         className="h-72 w-full overflow-hidden rounded-xl"
       />
       <ControlsRow>
-        <DemoButton onClick={() => setSpinning((v) => !v)}>{spinning ? "Pause spin" : "Resume spin"}</DemoButton>
+        <DemoButton onClick={() => setSpinning((v) => !v)}>
+          {spinning ? "Pause spin" : "Resume spin"}
+        </DemoButton>
       </ControlsRow>
     </>
   );
@@ -146,7 +177,9 @@ function LightingDemo() {
       />
       <ControlsRow>
         <DemoButton onClick={() => setLighting("day")}>☀️ Day rig</DemoButton>
-        <DemoButton onClick={() => setLighting("night")}>🌙 Night rig</DemoButton>
+        <DemoButton onClick={() => setLighting("night")}>
+          🌙 Night rig
+        </DemoButton>
       </ControlsRow>
     </>
   );
@@ -203,8 +236,12 @@ function ResetViewDemo() {
         className="h-72 w-full overflow-hidden rounded-xl"
       />
       <ControlsRow>
-        <DemoButton onClick={() => controlsRef.current?.dolly(2.5, true)}>Zoom way in</DemoButton>
-        <DemoButton onClick={() => controlsRef.current?.truck(1.2, 0.6, true)}>Pan off-model</DemoButton>
+        <DemoButton onClick={() => controlsRef.current?.dolly(2.5, true)}>
+          Zoom way in
+        </DemoButton>
+        <DemoButton onClick={() => controlsRef.current?.truck(1.2, 0.6, true)}>
+          Pan off-model
+        </DemoButton>
         <DemoButton
           onClick={() => {
             if (controlsRef.current && boundsRef.current) {
@@ -222,7 +259,12 @@ function ResetViewDemo() {
 // --- Hotspot click-to-zoom (reuses the production viewer as-is) ---------
 
 function HotspotDemo() {
-  return <ModelViewer model={MODEL} className="h-72 w-full overflow-hidden rounded-xl" />;
+  return (
+    <ModelViewer
+      model={MODEL}
+      className="h-72 w-full overflow-hidden rounded-xl"
+    />
+  );
 }
 
 // --- .glb format (different model, same pipeline) -----------------------
@@ -239,8 +281,14 @@ function GlbFormatDemo() {
         className="h-72 w-full overflow-hidden rounded-xl"
       />
       <ControlsRow>
-        <DemoButton onClick={() => controlsRef.current?.dolly(1.5, true)}>Zoom in</DemoButton>
-        <DemoButton onClick={() => controlsRef.current?.rotate(Math.PI / 4, 0, true)}>Rotate</DemoButton>
+        <DemoButton onClick={() => controlsRef.current?.dolly(1.5, true)}>
+          Zoom in
+        </DemoButton>
+        <DemoButton
+          onClick={() => controlsRef.current?.rotate(Math.PI / 4, 0, true)}
+        >
+          Rotate
+        </DemoButton>
       </ControlsRow>
     </>
   );
@@ -270,7 +318,7 @@ export const CAPABILITIES: Capability[] = [
     id: "orbit",
     title: "Rotate with the cursor (orbit)",
     description:
-      "Left-click-drag (or a one-finger touch-drag) orbits the camera around the aircraft's centre on both azimuth and polar axes — this is what reads as \"spinning the model\" with the mouse.",
+      'Left-click-drag (or a one-finger touch-drag) orbits the camera around the aircraft\'s centre on both azimuth and polar axes — this is what reads as "spinning the model" with the mouse.',
     render: () => <OrbitDemo />,
   },
   {
@@ -312,7 +360,7 @@ export const CAPABILITIES: Capability[] = [
     id: "hotspot",
     title: "Hotspot click-to-zoom",
     description:
-      "Each labeled pin is a named hotspot in the model registry; clicking one fits the camera to that part's bounding box for a close look, then \"Reset view\" zooms back out to the full aircraft.",
+      'Each labeled pin is a named hotspot in the model registry; clicking one fits the camera to that part\'s bounding box for a close look, then "Reset view" zooms back out to the full aircraft.',
     render: () => <HotspotDemo />,
   },
   {
