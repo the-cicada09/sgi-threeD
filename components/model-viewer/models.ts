@@ -548,7 +548,7 @@ export const MODELS = {
     hotspots: [],
   },
   embraer_erj_135: {
-    path: "https://res.cloudinary.com/vtulbqli/image/upload/v1787660668/embraer_erj-135.glb",
+    path: "https://res.cloudinary.com/vtulbqli/image/upload/v1788175077/embraer.glb",
     label: "Embraer ERJ-135",
     family: "Embraer",
     category: "Regional Jet",
