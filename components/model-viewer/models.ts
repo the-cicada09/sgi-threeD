@@ -28,7 +28,7 @@ export interface Hotspot extends PartInfo {
    *  [[minX, minY, minZ], [maxX, maxY, maxZ]]. */
   box: readonly [
     readonly [number, number, number],
-    readonly [number, number, number],
+    readonly [number, number, number]
   ];
 }
 
@@ -66,158 +66,158 @@ export interface ModelConfig {
 }
 
 export const MODELS = {
-  airbus_a380_800: {
-    path: "/airbus_a380_-_800/scene.gltf",
-    label: "Airbus A380-800",
-    family: "Airbus",
-    category: "Wide-body Airliner",
-    description:
-      "Airbus's double-deck, four-engine wide-body — the largest passenger airliner ever built, with two full-length cabins seating 500+ passengers. Built for high-capacity trunk routes between major long-haul hubs.",
-    specs: {
-      length: "72.72 m",
-      wingspan: "79.75 m",
-      height: "24.09 m",
-      passengers: "525 (typical 3-class)",
-      cruiseSpeed: "903 km/h (Mach 0.85)",
-      range: "8,000 nmi (14,800 km)",
-      serviceCeiling: "13,100 m",
-      engine: "4× Rolls-Royce Trent 900 / Engine Alliance GP7200",
-    },
-    hotspots: [
-      {
-        id: "nose",
-        label: "Nose",
-        description:
-          "Houses the weather radar dome and forward avionics bay. Its curved, tapered shape reduces aerodynamic drag and shields the radar antenna that scans the flight path ahead for storms and turbulence.",
-        manufacturer: "Honeywell Aerospace",
-        partNumber: "WXR-2100 MultiScan Radome",
-        cost: "$185,000",
-        installDate: "2019-03-12",
-        lastMaintenance: "2026-02-04",
-        nextMaintenance: "2026-11-04",
-        status: "Operational",
-        // Pushed slightly beyond the model's actual nose tip (~3.33) so the
-        // marker floats in open air instead of sitting on the mesh surface —
-        // right on the surface, `occlude` flickers the pin invisible because
-        // the camera-to-marker raycast is right at the boundary every frame.
-        marker: [0.01, -0.02, 3.5],
-        box: [
-          [-0.35, -0.35, 2.9],
-          [0.35, 0.35, 3.4],
-        ],
-      },
-      {
-        id: "cockpit",
-        label: "Cockpit",
-        description:
-          "The flight deck, where the pilots sit. On the A380 it's fitted with a glass cockpit — large digital displays and side-stick controls replacing traditional analog dials and yokes.",
-        manufacturer: "Thales Avionics",
-        partNumber: "A380 Glass Cockpit Suite (8x Display Unit)",
-        cost: "$4,200,000",
-        installDate: "2019-03-12",
-        lastMaintenance: "2026-05-18",
-        nextMaintenance: "2027-05-18",
-        status: "Operational",
-        marker: [0, 0.75, 3.2],
-        box: [
-          [-0.9, -0.4, 2.0],
-          [0.9, 1.0, 3.4],
-        ],
-      },
-      // Engines are numbered left-to-right across the aircraft (1 = left
-      // outboard … 4 = right outboard), matching standard multi-engine
-      // convention. `box` is derived from each engine's actual fan-face mesh
-      // in scene.gltf (its own accessor min/max, transformed through the
-      // node's full ancestor matrix chain) padded out to cover the visible
-      // nacelle without overlapping the neighboring engine on the same wing.
-      // `marker` sits past the box's front face, in open air ahead of the
-      // intake — anchoring the Html pin on the mesh itself gets it occluded
-      // by the nacelle/pylon geometry from most angles (same fix as Nose's
-      // marker above).
-      {
-        id: "engine-1",
-        label: "Engine 1",
-        description:
-          "Outboard engine on the left wing. One of four Rolls-Royce Trent 900 turbofans that power the A380, each mounted on its own pylon to keep engine-out asymmetry manageable if one fails.",
-        manufacturer: "Rolls-Royce",
-        partNumber: "Trent 972-84",
-        cost: "$27,500,000",
-        installDate: "2019-03-12",
-        lastMaintenance: "2026-04-02",
-        nextMaintenance: "2026-10-02",
-        status: "Operational",
-        // box is read directly off the fan-face mesh's own bounding box (see
-        // prop3_still node in the .gltf), transformed through the node's
-        // full ancestor chain — not eyeballed, so it sits right on the
-        // actual nacelle regardless of camera angle. marker is pushed past
-        // the box's front face into open air (same reason as the nose pin
-        // above) — sitting on the mesh itself gets it occluded by the
-        // nacelle/pylon geometry from most camera angles.
-        marker: [-2.326, -0.073, 0.73],
-        box: [
-          [-2.676, -0.373, -0.323],
-          [-1.976, 0.227, 0.577],
-        ],
-      },
-      {
-        id: "engine-2",
-        label: "Engine 2",
-        description:
-          "Inboard engine on the left wing, mounted closer to the fuselage than Engine 1. Its thrust reversers help slow the aircraft on landing rollout.",
-        manufacturer: "Rolls-Royce",
-        partNumber: "Trent 972-84",
-        cost: "$27,500,000",
-        installDate: "2019-03-12",
-        lastMaintenance: "2026-07-14",
-        nextMaintenance: "2027-01-14",
-        status: "Operational",
-        // marker pushed past the box's front face — see engine-1's comment.
-        marker: [-1.34, -0.168, 1.46],
-        box: [
-          [-1.69, -0.468, 0.409],
-          [-0.99, 0.132, 1.309],
-        ],
-      },
-      {
-        id: "engine-3",
-        label: "Engine 3",
-        description:
-          "Inboard engine on the right wing, mirroring Engine 2. Bleed air from its compressor also feeds the cabin's environmental control system.",
-        manufacturer: "Rolls-Royce",
-        partNumber: "Trent 972-84",
-        cost: "$27,500,000",
-        installDate: "2019-03-12",
-        lastMaintenance: "2026-07-14",
-        nextMaintenance: "2027-01-14",
-        status: "Under Inspection",
-        // marker pushed past the box's front face — see engine-1's comment.
-        marker: [1.323, -0.168, 1.46],
-        box: [
-          [0.973, -0.468, 0.409],
-          [1.673, 0.132, 1.309],
-        ],
-      },
-      {
-        id: "engine-4",
-        label: "Engine 4",
-        description:
-          "Outboard engine on the right wing, mirroring Engine 1. Being furthest from the fuselage, it produces the largest yaw effect of the four if it loses thrust in flight.",
-        manufacturer: "Rolls-Royce",
-        partNumber: "Trent 972-84",
-        cost: "$27,500,000",
-        installDate: "2019-03-12",
-        lastMaintenance: "2026-04-02",
-        nextMaintenance: "2026-10-02",
-        status: "Operational",
-        // marker pushed past the box's front face — see engine-1's comment.
-        marker: [2.309, -0.073, 0.73],
-        box: [
-          [1.959, -0.373, -0.323],
-          [2.659, 0.227, 0.577],
-        ],
-      },
-    ],
-  },
+  // airbus_a380_800: {
+  //   path: "/airbus_a380_-_800/scene.gltf",
+  //   label: "Airbus A380-800",
+  //   family: "Airbus",
+  //   category: "Wide-body Airliner",
+  //   description:
+  //     "Airbus's double-deck, four-engine wide-body — the largest passenger airliner ever built, with two full-length cabins seating 500+ passengers. Built for high-capacity trunk routes between major long-haul hubs.",
+  //   specs: {
+  //     length: "72.72 m",
+  //     wingspan: "79.75 m",
+  //     height: "24.09 m",
+  //     passengers: "525 (typical 3-class)",
+  //     cruiseSpeed: "903 km/h (Mach 0.85)",
+  //     range: "8,000 nmi (14,800 km)",
+  //     serviceCeiling: "13,100 m",
+  //     engine: "4× Rolls-Royce Trent 900 / Engine Alliance GP7200",
+  //   },
+  //   hotspots: [
+  //     {
+  //       id: "nose",
+  //       label: "Nose",
+  //       description:
+  //         "Houses the weather radar dome and forward avionics bay. Its curved, tapered shape reduces aerodynamic drag and shields the radar antenna that scans the flight path ahead for storms and turbulence.",
+  //       manufacturer: "Honeywell Aerospace",
+  //       partNumber: "WXR-2100 MultiScan Radome",
+  //       cost: "$185,000",
+  //       installDate: "2019-03-12",
+  //       lastMaintenance: "2026-02-04",
+  //       nextMaintenance: "2026-11-04",
+  //       status: "Operational",
+  //       // Pushed slightly beyond the model's actual nose tip (~3.33) so the
+  //       // marker floats in open air instead of sitting on the mesh surface —
+  //       // right on the surface, `occlude` flickers the pin invisible because
+  //       // the camera-to-marker raycast is right at the boundary every frame.
+  //       marker: [0.01, -0.02, 3.5],
+  //       box: [
+  //         [-0.35, -0.35, 2.9],
+  //         [0.35, 0.35, 3.4],
+  //       ],
+  //     },
+  //     {
+  //       id: "cockpit",
+  //       label: "Cockpit",
+  //       description:
+  //         "The flight deck, where the pilots sit. On the A380 it's fitted with a glass cockpit — large digital displays and side-stick controls replacing traditional analog dials and yokes.",
+  //       manufacturer: "Thales Avionics",
+  //       partNumber: "A380 Glass Cockpit Suite (8x Display Unit)",
+  //       cost: "$4,200,000",
+  //       installDate: "2019-03-12",
+  //       lastMaintenance: "2026-05-18",
+  //       nextMaintenance: "2027-05-18",
+  //       status: "Operational",
+  //       marker: [0, 0.75, 3.2],
+  //       box: [
+  //         [-0.9, -0.4, 2.0],
+  //         [0.9, 1.0, 3.4],
+  //       ],
+  //     },
+  //     // Engines are numbered left-to-right across the aircraft (1 = left
+  //     // outboard … 4 = right outboard), matching standard multi-engine
+  //     // convention. `box` is derived from each engine's actual fan-face mesh
+  //     // in scene.gltf (its own accessor min/max, transformed through the
+  //     // node's full ancestor matrix chain) padded out to cover the visible
+  //     // nacelle without overlapping the neighboring engine on the same wing.
+  //     // `marker` sits past the box's front face, in open air ahead of the
+  //     // intake — anchoring the Html pin on the mesh itself gets it occluded
+  //     // by the nacelle/pylon geometry from most angles (same fix as Nose's
+  //     // marker above).
+  //     {
+  //       id: "engine-1",
+  //       label: "Engine 1",
+  //       description:
+  //         "Outboard engine on the left wing. One of four Rolls-Royce Trent 900 turbofans that power the A380, each mounted on its own pylon to keep engine-out asymmetry manageable if one fails.",
+  //       manufacturer: "Rolls-Royce",
+  //       partNumber: "Trent 972-84",
+  //       cost: "$27,500,000",
+  //       installDate: "2019-03-12",
+  //       lastMaintenance: "2026-04-02",
+  //       nextMaintenance: "2026-10-02",
+  //       status: "Operational",
+  //       // box is read directly off the fan-face mesh's own bounding box (see
+  //       // prop3_still node in the .gltf), transformed through the node's
+  //       // full ancestor chain — not eyeballed, so it sits right on the
+  //       // actual nacelle regardless of camera angle. marker is pushed past
+  //       // the box's front face into open air (same reason as the nose pin
+  //       // above) — sitting on the mesh itself gets it occluded by the
+  //       // nacelle/pylon geometry from most camera angles.
+  //       marker: [-2.326, -0.073, 0.73],
+  //       box: [
+  //         [-2.676, -0.373, -0.323],
+  //         [-1.976, 0.227, 0.577],
+  //       ],
+  //     },
+  //     {
+  //       id: "engine-2",
+  //       label: "Engine 2",
+  //       description:
+  //         "Inboard engine on the left wing, mounted closer to the fuselage than Engine 1. Its thrust reversers help slow the aircraft on landing rollout.",
+  //       manufacturer: "Rolls-Royce",
+  //       partNumber: "Trent 972-84",
+  //       cost: "$27,500,000",
+  //       installDate: "2019-03-12",
+  //       lastMaintenance: "2026-07-14",
+  //       nextMaintenance: "2027-01-14",
+  //       status: "Operational",
+  //       // marker pushed past the box's front face — see engine-1's comment.
+  //       marker: [-1.34, -0.168, 1.46],
+  //       box: [
+  //         [-1.69, -0.468, 0.409],
+  //         [-0.99, 0.132, 1.309],
+  //       ],
+  //     },
+  //     {
+  //       id: "engine-3",
+  //       label: "Engine 3",
+  //       description:
+  //         "Inboard engine on the right wing, mirroring Engine 2. Bleed air from its compressor also feeds the cabin's environmental control system.",
+  //       manufacturer: "Rolls-Royce",
+  //       partNumber: "Trent 972-84",
+  //       cost: "$27,500,000",
+  //       installDate: "2019-03-12",
+  //       lastMaintenance: "2026-07-14",
+  //       nextMaintenance: "2027-01-14",
+  //       status: "Under Inspection",
+  //       // marker pushed past the box's front face — see engine-1's comment.
+  //       marker: [1.323, -0.168, 1.46],
+  //       box: [
+  //         [0.973, -0.468, 0.409],
+  //         [1.673, 0.132, 1.309],
+  //       ],
+  //     },
+  //     {
+  //       id: "engine-4",
+  //       label: "Engine 4",
+  //       description:
+  //         "Outboard engine on the right wing, mirroring Engine 1. Being furthest from the fuselage, it produces the largest yaw effect of the four if it loses thrust in flight.",
+  //       manufacturer: "Rolls-Royce",
+  //       partNumber: "Trent 972-84",
+  //       cost: "$27,500,000",
+  //       installDate: "2019-03-12",
+  //       lastMaintenance: "2026-04-02",
+  //       nextMaintenance: "2026-10-02",
+  //       status: "Operational",
+  //       // marker pushed past the box's front face — see engine-1's comment.
+  //       marker: [2.309, -0.073, 0.73],
+  //       box: [
+  //         [1.959, -0.373, -0.323],
+  //         [2.659, 0.227, 0.577],
+  //       ],
+  //     },
+  //   ],
+  // },
   // Single .glb file (binary container) rather than .gltf + .bin + loose
   // textures — same GLTFLoader codepath in Model.tsx handles both formats
   // transparently, so this proves that out. This model's own local space is
@@ -396,7 +396,7 @@ export const MODELS = {
     hotspots: [],
   },
   boeing_737: {
-    path: "https://res.cloudinary.com/vtulbqli/image/upload/v1787654123/boeing_737.glb",
+    path: "https://res.cloudinary.com/vtulbqli/image/upload/v1788172901/boeing_737.glb",
     label: "Boeing 737",
     family: "Boeing",
     category: "Narrow-body Airliner",
@@ -434,8 +434,8 @@ export const MODELS = {
     hotspots: [],
   },
   boeing_787_dreamliner: {
-    path: "https://res.cloudinary.com/vtulbqli/image/upload/v1787660665/boeing_787_dreamliner.glb",
-    label: "Boeing 787 Dreamliner",
+    path: "https://res.cloudinary.com/vtulbqli/image/upload/v1788173244/boeing_787o.glb",
+    label: "Boeing 787",
     family: "Boeing",
     category: "Wide-body Airliner",
     description:
@@ -454,7 +454,7 @@ export const MODELS = {
   },
   utair_boeing_767: {
     path: "https://res.cloudinary.com/vtulbqli/image/upload/v1787657293/utair_boeing_767_1.glb",
-    label: "UTair Boeing 767",
+    label: "Boeing 767",
     family: "Boeing",
     category: "Wide-body Airliner",
     description:

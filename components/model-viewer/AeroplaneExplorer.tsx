@@ -6,7 +6,10 @@ import { ModelViewer } from "./ModelViewer";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import type { SidebarVariant } from "./PartInfoModal";
 import { Breadcrumbs } from "./Breadcrumbs";
-import { ManufacturerNavigation, type FamilySummary } from "./ManufacturerNavigation";
+import {
+  ManufacturerNavigation,
+  type FamilySummary,
+} from "./ManufacturerNavigation";
 import { ModelNavigation } from "./ModelNavigation";
 import { SpecificationGrid } from "./SpecificationGrid";
 import { RelatedAircraft } from "./RelatedAircraft";
@@ -32,10 +35,12 @@ const FAMILIES: { family: string; models: ModelName[] }[] = (() => {
   return order.map((family) => ({ family, models: groups.get(family)! }));
 })();
 
-const FAMILY_SUMMARIES: FamilySummary[] = FAMILIES.map(({ family, models }) => ({
-  family,
-  count: models.length,
-}));
+const FAMILY_SUMMARIES: FamilySummary[] = FAMILIES.map(
+  ({ family, models }) => ({
+    family,
+    count: models.length,
+  })
+);
 
 function familyOf(model: ModelName) {
   return MODELS[model].family;
@@ -50,7 +55,7 @@ function CategoryBadge({ children }: { children: string }) {
   );
 }
 
-const DEFAULT_MODEL: ModelName = "airbus_a380_800";
+const DEFAULT_MODEL: ModelName = "vietnam_airlines_a321_200";
 
 /**
  * The aeroplane page's client half: owns which registered model is showing
@@ -59,7 +64,11 @@ const DEFAULT_MODEL: ModelName = "airbus_a380_800";
  * ModelViewer instance (only its `model` prop changes — CameraControls/
  * Canvas stay mounted, only the GLTF underneath swaps and re-fits).
  */
-export function AeroplaneExplorer({ sidebarVariant }: { sidebarVariant?: SidebarVariant }) {
+export function AeroplaneExplorer({
+  sidebarVariant,
+}: {
+  sidebarVariant?: SidebarVariant;
+}) {
   const [model, setModel] = useState<ModelName>(DEFAULT_MODEL);
   // Which multi-model family's sub-list is expanded in ModelNavigation —
   // starts open on the initial model's own family so it's never a click away.
@@ -75,15 +84,19 @@ export function AeroplaneExplorer({ sidebarVariant }: { sidebarVariant?: Sidebar
 
   const openFamilyModels = useMemo(
     () => FAMILIES.find((f) => f.family === openFamily)?.models ?? [],
-    [openFamily],
+    [openFamily]
   );
 
   const siblings = useMemo(
     () =>
       (FAMILIES.find((f) => f.family === family)?.models ?? [])
         .filter((name) => name !== model)
-        .map((name) => ({ name, label: MODELS[name].label, category: MODELS[name].category })),
-    [family, model],
+        .map((name) => ({
+          name,
+          label: MODELS[name].label,
+          category: MODELS[name].category,
+        })),
+    [family, model]
   );
 
   // The breadcrumb tracks which family is open in the nav, not just which
@@ -101,7 +114,10 @@ export function AeroplaneExplorer({ sidebarVariant }: { sidebarVariant?: Sidebar
         <Breadcrumbs
           items={[
             { label: "Aircraft", href: "/" },
-            { label: breadcrumbFamily, onClick: () => setOpenFamily(breadcrumbFamily) },
+            {
+              label: breadcrumbFamily,
+              onClick: () => setOpenFamily(breadcrumbFamily),
+            },
             ...(breadcrumbShowsModel ? [{ label: config.label }] : []),
           ]}
         />
@@ -111,20 +127,30 @@ export function AeroplaneExplorer({ sidebarVariant }: { sidebarVariant?: Sidebar
             <p className="text-xs font-semibold tracking-widest text-zinc-400 uppercase dark:text-zinc-500">
               Aircraft
             </p>
-            <p className="mt-1 text-sm font-medium text-zinc-500 dark:text-zinc-400">{family}</p>
+            <p className="mt-1 text-sm font-medium text-zinc-500 dark:text-zinc-400">
+              {family}
+            </p>
             <div className="mt-1 flex flex-wrap items-center gap-3">
               <h1 className="text-3xl font-bold tracking-tight text-zinc-900 md:text-4xl dark:text-zinc-50">
                 {config.label}
               </h1>
-              {config.category && <CategoryBadge>{config.category}</CategoryBadge>}
+              {config.category && (
+                <CategoryBadge>{config.category}</CategoryBadge>
+              )}
             </div>
           </div>
           <div className="flex shrink-0 items-center gap-3 pt-1">
             <Link
-              href={sidebarVariant === "inline" ? "/aeroplane" : "/aeroplane/inline-sidebar"}
+              href={
+                sidebarVariant === "inline"
+                  ? "/aeroplane"
+                  : "/aeroplane/inline-sidebar"
+              }
               className="text-xs font-medium text-zinc-400 transition hover:text-zinc-700 dark:text-zinc-500 dark:hover:text-zinc-200"
             >
-              {sidebarVariant === "inline" ? "Compare: fixed sidebar →" : "Compare: inline sidebar →"}
+              {sidebarVariant === "inline"
+                ? "Compare: fixed sidebar →"
+                : "Compare: inline sidebar →"}
             </Link>
             <ThemeToggle />
           </div>
@@ -150,7 +176,10 @@ export function AeroplaneExplorer({ sidebarVariant }: { sidebarVariant?: Sidebar
           />
           <ModelNavigation
             family={openFamily}
-            models={openFamilyModels.map((name) => ({ name, label: MODELS[name].label }))}
+            models={openFamilyModels.map((name) => ({
+              name,
+              label: MODELS[name].label,
+            }))}
             activeModel={model}
             onSelect={selectModel}
           />
@@ -182,21 +211,27 @@ export function AeroplaneExplorer({ sidebarVariant }: { sidebarVariant?: Sidebar
             )}
             <dl className="mt-4 flex gap-8">
               <div>
-                <dt className="text-xs text-zinc-500 dark:text-zinc-400">Manufacturer</dt>
+                <dt className="text-xs text-zinc-500 dark:text-zinc-400">
+                  Manufacturer
+                </dt>
                 <dd className="mt-0.5 text-sm font-semibold text-zinc-900 dark:text-zinc-50">
                   {family}
                 </dd>
               </div>
               {config.category && (
                 <div>
-                  <dt className="text-xs text-zinc-500 dark:text-zinc-400">Category</dt>
+                  <dt className="text-xs text-zinc-500 dark:text-zinc-400">
+                    Category
+                  </dt>
                   <dd className="mt-0.5 text-sm font-semibold text-zinc-900 dark:text-zinc-50">
                     {config.category}
                   </dd>
                 </div>
               )}
               <div className="min-w-0">
-                <dt className="text-xs text-zinc-500 dark:text-zinc-400">Source asset</dt>
+                <dt className="text-xs text-zinc-500 dark:text-zinc-400">
+                  Source asset
+                </dt>
                 <dd className="mt-0.5 max-w-[280px] truncate text-sm font-mono text-zinc-500 dark:text-zinc-400">
                   {config.path.startsWith("http") ? (
                     <a
@@ -219,7 +254,11 @@ export function AeroplaneExplorer({ sidebarVariant }: { sidebarVariant?: Sidebar
           <SpecificationGrid specs={config.specs} />
         </div>
 
-        <RelatedAircraft family={family} siblings={siblings} onSelect={selectModel} />
+        <RelatedAircraft
+          family={family}
+          siblings={siblings}
+          onSelect={selectModel}
+        />
       </div>
     </div>
   );
