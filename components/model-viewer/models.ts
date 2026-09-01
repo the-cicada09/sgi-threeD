@@ -230,7 +230,7 @@ export const MODELS = {
   // low-slung, wing-symmetric clusters that are the engine nacelles), not
   // eyeballed from a screenshot — same approach as the A380 engine fix.
   vietnam_airlines_a321_200: {
-    path: "https://res.cloudinary.com/vtulbqli/image/upload/v1786439617/vietnam_airlines_airbus_a321-200.glb",
+    path: "https://res.cloudinary.com/vtulbqli/image/upload/v1788240713/vietnam_airlines_airbus_a321-200.glb",
     label: "Vietnam Airlines A321-200 (.glb)",
     family: "Airbus",
     category: "Narrow-body Airliner",
@@ -377,7 +377,7 @@ export const MODELS = {
     hotspots: [],
   },
   airbus_a330: {
-    path: "https://res.cloudinary.com/vtulbqli/image/upload/v1787654124/airbus_a330_1.glb",
+    path: "https://res.cloudinary.com/vtulbqli/image/upload/v1788241058/airbus_a330_1.glb",
     label: "Airbus A330",
     family: "Airbus",
     category: "Wide-body Airliner",
@@ -491,7 +491,7 @@ export const MODELS = {
     hotspots: [],
   },
   bombardier_dash_q400_qantaslink: {
-    path: "https://res.cloudinary.com/vtulbqli/image/upload/v1787660665/bombardier_dash_q400_-_qantas_link.glb",
+    path: "https://res.cloudinary.com/vtulbqli/image/upload/v1788241828/bombardier_dash_q400_-_qantas.glb",
     label: "Bombardier Dash 8 Q400 (QantasLink)",
     family: "Bombardier",
     category: "Regional Turboprop",
@@ -510,7 +510,7 @@ export const MODELS = {
     hotspots: [],
   },
   atr_42_600: {
-    path: "https://res.cloudinary.com/vtulbqli/image/upload/v1787660666/atr_42-600.glb",
+    path: "https://res.cloudinary.com/vtulbqli/image/upload/v1788241747/atr_42-600.glb",
     label: "ATR 42-600",
     family: "ATR",
     category: "Regional Turboprop",
@@ -586,7 +586,7 @@ export const MODELS = {
     hotspots: [],
   },
   cessna_210a_centurion: {
-    path: "https://res.cloudinary.com/vtulbqli/image/upload/v1787660668/cessna_210a_centurion.glb",
+    path: "https://res.cloudinary.com/vtulbqli/image/upload/v1788241133/cessna_210a_centurion.glb",
     label: "Cessna 210A Centurion",
     family: "Cessna",
     category: "General Aviation",
